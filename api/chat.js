@@ -1,4 +1,3 @@
-
 import OpenAI from "openai";
 
 const openai = new OpenAI({
@@ -6,16 +5,20 @@ const openai = new OpenAI({
 });
 
 export default async function handler(req, res) {
-  const body = await req.json();
-  const { message } = body;
+  try {
+    const { message } = req.body;
 
-  const resp = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo",
-    messages: [
-      { role: "system", content: "Você é um tutor amigável de inglês. Corrija suavemente os erros e mantenha a conversa fluindo." },
-      { role: "user", content: message }
-    ]
-  });
+    const resp = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "system", content: "Você é um tutor amigável de inglês. Corrija suavemente os erros e mantenha a conversa fluindo." },
+        { role: "user", content: message }
+      ]
+    });
 
-  return res.status(200).json({ reply: resp.choices[0].message.content });
+    res.status(200).json({ reply: resp.choices[0].message.content });
+  } catch (err) {
+    console.error("Erro na função chat.js:", err);
+    res.status(500).json({ reply: "Ocorreu um erro ao acessar a IA." });
+  }
 }

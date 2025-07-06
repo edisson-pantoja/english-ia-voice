@@ -1,1 +1,41 @@
-// conteúdo será atualizado no próximo passo
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Restaurant Dialogue</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; background: #f9fafb; }
+    h2 { color: #111827; }
+    .line { margin: 1rem 0; }
+    button { margin-left: 1rem; background: #4f46e5; color: white; border: none; padding: 6px 12px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h2>🍽️ Practice: At the Restaurant</h2>
+
+  <div class="line">
+    <strong>Waiter:</strong> Hello! Welcome to our restaurant. How many people are in your party?
+    <button onclick="speak('Hello! Welcome to our restaurant. How many people are in your party?')">🔊</button>
+  </div>
+  <div class="line">
+    <strong>You:</strong> Try saying your answer in English...
+  </div>
+
+  <p><a href="index.html">⬅️ Back to main app</a></p>
+
+  <script>
+    async function speak(text) {
+      const res = await fetch('/api/speak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.play();
+    }
+  </script>
+</body>
+</html>

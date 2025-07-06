@@ -1,1 +1,7 @@
-// conteúdo será atualizado no próximo passo
+
+{
+  "type": "module",
+  "dependencies": {
+    "openai": "^4.0.0"
+  }
+}

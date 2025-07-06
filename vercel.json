@@ -1,1 +1,16 @@
-// conteúdo será atualizado no próximo passo
+
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/chat.js", "use": "@vercel/node" },
+    { "src": "api/speak.js", "use": "@vercel/node" },
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "dialog.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/chat", "dest": "/api/chat.js" },
+    { "src": "/api/speak", "dest": "/api/speak.js" },
+    { "src": "/dialog", "dest": "/dialog.html" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}

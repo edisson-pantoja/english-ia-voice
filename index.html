@@ -1,58 +1,91 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>AI English Tutor - Shimmer Voice</title>
+  <meta charset="UTF-8" />
+  <title>Practice English - Free Talk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: Arial, sans-serif;
       background: #f0f4f8;
+      padding: 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 2rem;
-      height: 100vh;
-      margin: 0;
-    }
-    h1 {
-      color: #1f2937;
     }
     button {
-      background-color: #4f46e5;
+      background: #4f46e5;
       color: white;
       border: none;
-      padding: 12px 24px;
-      font-size: 16px;
+      padding: 10px 20px;
       border-radius: 8px;
+      font-size: 16px;
+      margin: 10px;
       cursor: pointer;
-      margin-top: 1rem;
     }
-    button:hover {
-      background-color: #4338ca;
-    }
-    #response {
-      margin-top: 2rem;
-      background: #e0e7ff;
-      padding: 1rem;
-      border-radius: 10px;
+    button:hover { background: #4338ca; }
+    #response-box {
+      width: 100%;
       max-width: 600px;
-    }
-    #status {
       margin-top: 1rem;
-      font-style: italic;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .entry {
+      margin-bottom: 1rem;
+    }
+    .entry p { margin: 5px 0; }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    @media (max-width: 600px) {
+      body { padding: 1rem; }
+      button { width: 100%; max-width: 300px; }
     }
   </style>
 </head>
 <body>
-  <h1>🎤 Speak English with AI (Shimmer Voice)</h1>
-  <button onclick="startListening()">🎙️ Speak Now</button>
-  <div id="status">Click the button and start speaking...</div>
-  <div id="response"></div>
+  <h1>🎤 Practice Your English</h1>
+  <div class="buttons">
+    <button onclick="startListening()">🎙️ Speak</button>
+    <button onclick="repeatLast()" id="repeatBtn" style="display:none;">🔊 Listen Again</button>
+    <button onclick="clearHistory()">🗑️ Clear Conversation</button>
+    <a href="/dialog"><button>📚 Guided Dialogues</button></a>
+  </div>
+
+  <div id="response-box"></div>
 
   <script>
-    async function getAudioFromText(text) {
+    let history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+    let lastResponse = "";
+
+    function renderHistory() {
+      const box = document.getElementById("response-box");
+      box.innerHTML = "";
+      history.forEach(entry => {
+        box.innerHTML += `
+          <div class="entry">
+            <p><strong>You:</strong> ${entry.user}</p>
+            <p><strong>AI:</strong> ${entry.ai}</p>
+          </div>`;
+      });
+    }
+
+    renderHistory();
+
+    function clearHistory() {
+      localStorage.removeItem("chatHistory");
+      history = [];
+      renderHistory();
+      document.getElementById("repeatBtn").style.display = "none";
+    }
+
+    async function speak(text) {
+      lastResponse = text;
       const res = await fetch('/api/speak', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -62,6 +95,11 @@
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
       audio.play();
+      document.getElementById("repeatBtn").style.display = "inline-block";
+    }
+
+    function repeatLast() {
+      if (lastResponse) speak(lastResponse);
     }
 
     async function sendToAPI(text) {
@@ -71,21 +109,20 @@
         body: JSON.stringify({ message: text })
       });
       const data = await res.json();
-      document.getElementById("response").innerText = data.reply;
-      getAudioFromText(data.reply);
+      history.push({ user: text, ai: data.reply });
+      localStorage.setItem("chatHistory", JSON.stringify(history));
+      renderHistory();
+      speak(data.reply);
     }
 
     function startListening() {
       const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
       rec.lang = "en-US";
       rec.interimResults = false;
-      rec.onstart = () => document.getElementById("status").innerText = "Listening...";
-      rec.onresult = async (e) => {
+      rec.onresult = (e) => {
         const spoken = e.results[0][0].transcript;
-        document.getElementById("status").innerText = `You said: "${spoken}"`;
         sendToAPI(spoken);
       };
-      rec.onerror = (err) => document.getElementById("status").innerText = "Error: " + err.error;
       rec.start();
     }
   </script>

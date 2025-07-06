@@ -64,16 +64,17 @@
     let lastResponse = "";
 
     function renderHistory() {
-      const box = document.getElementById("response-box");
-      box.innerHTML = "";
-      history.forEach(entry => {
-        box.innerHTML += `
-          <div class="entry">
-            <p><strong>You:</strong> ${entry.user}</p>
-            <p><strong>AI:</strong> ${entry.ai}</p>
-          </div>`;
-      });
-    }
+  const box = document.getElementById("response-box");
+  box.innerHTML = "";
+  history.slice().reverse().forEach(entry => {
+    box.innerHTML += `
+      <div class="entry">
+        <p><strong>You:</strong> ${entry.user}</p>
+        <p><strong>AI:</strong> ${entry.ai}</p>
+      </div>`;
+  });
+}
+
 
     renderHistory();
 

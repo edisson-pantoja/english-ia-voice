@@ -8,7 +8,11 @@ export default async function handler(req, res) {
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
-        { role: "system", content: prompt + "You are a kind English tutor. Correct the user's English gently and explain briefly why. Always end your response with a follow-up question to keep the conversation going. Do not translate to other languages." },
+        {
+          role: "system",
+          content: prompt +
+            "You are a kind and helpful English tutor. When the user says something, correct it gently by first repeating what they said, then showing a more natural or correct way to say it. Briefly explain the reason for the correction. Always end with a follow-up question to keep the conversation going. Do not translate or use any language other than English."
+        },
         { role: "user", content: message }
       ]
     });

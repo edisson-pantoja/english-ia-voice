@@ -3,17 +3,56 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>English Voice Tutor</title>
+  <title>English AI Voice Tutor</title>
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 2em; background: #f0f8ff; }
-    button { padding: 10px 20px; font-size: 16px; margin: 10px; }
-    #response { margin-top: 20px; font-size: 18px; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f9fafb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      color: #1f2937;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    button {
+      background-color: #4f46e5;
+      color: white;
+      padding: 12px 24px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #4338ca;
+    }
+    #status {
+      margin-top: 1rem;
+      font-style: italic;
+      color: #374151;
+    }
+    #response {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      max-width: 600px;
+      border-radius: 12px;
+      background-color: #e0e7ff;
+      color: #111827;
+      font-size: 1rem;
+    }
   </style>
 </head>
 <body>
-  <h1>🎤 Practice English with AI</h1>
+  <h1>🎤 Practice Your English with AI</h1>
   <button onclick="startListening()">🎙️ Speak</button>
-  <p id="status">Click to start speaking...</p>
+  <p id="status">Click the button and speak clearly...</p>
   <div id="response"></div>
 
   <script>
@@ -35,7 +74,8 @@
 
     function startListening() {
       const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      rec.lang = "en-US"; rec.interimResults = false;
+      rec.lang = "en-US";
+      rec.interimResults = false;
       rec.onstart = () => document.getElementById("status").innerText = "Listening...";
       rec.onresult = async (e) => {
         const spoken = e.results[0][0].transcript;

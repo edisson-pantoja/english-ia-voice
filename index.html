@@ -13,7 +13,7 @@
       flex-direction: column;
       align-items: center;
     }
-    button {
+    .button {
       background: #4f46e5;
       color: white;
       border: none;
@@ -23,7 +23,8 @@
       margin: 10px;
       cursor: pointer;
     }
-    button:hover { background: #4338ca; }
+    .button:hover { background: #4338ca; }
+    .recording { background: #22c55e !important; }
     #response-box {
       width: 100%;
       max-width: 600px;
@@ -32,49 +33,58 @@
       padding: 1rem;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column-reverse;
     }
-    .entry {
-      margin-bottom: 1rem;
-    }
+    .entry { margin-bottom: 1rem; }
     .entry p { margin: 5px 0; }
     .buttons {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
     }
+    #interim-box {
+      margin-top: 10px;
+      font-style: italic;
+    }
     @media (max-width: 600px) {
       body { padding: 1rem; }
-      button { width: 100%; max-width: 300px; }
+      .button { width: 100%; max-width: 300px; }
     }
   </style>
 </head>
 <body>
   <h1>🎤 Practice Your English</h1>
   <div class="buttons">
-    <button onclick="startListening()">🎙️ Speak</button>
-    <button onclick="repeatLast()" id="repeatBtn" style="display:none;">🔊 Listen Again</button>
-    <button onclick="clearHistory()">🗑️ Clear Conversation</button>
-    <a href="/dialog"><button>📚 Guided Dialogues</button></a>
+    <button id="startBtn" class="button" onclick="startListening()">🎙️ Speak</button>
+    <button id="stopBtn" class="button" onclick="stopListening()" style="display:none;">⏹️ Stop</button>
+    <button id="sendBtn" class="button" onclick="sendTranscript()" style="display:none;">✅ Send to AI</button>
+    <button id="cancelBtn" class="button" onclick="cancelTranscript()" style="display:none;">❌ Cancel</button>
+    <button class="button" onclick="repeatLast()" id="repeatBtn" style="display:none;">🔊 Listen Again</button>
+    <button class="button" onclick="clearHistory()">🗑️ Clear Conversation</button>
+    <a href="/dialog"><button class="button">📚 Guided Dialogues</button></a>
   </div>
 
+  <div id="interim-box"></div>
   <div id="response-box"></div>
 
   <script>
     let history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     let lastResponse = "";
+    let recognition;
+    let transcript = "";
 
     function renderHistory() {
-  const box = document.getElementById("response-box");
-  box.innerHTML = "";
-  history.slice().reverse().forEach(entry => {
-    box.innerHTML += `
-      <div class="entry">
-        <p><strong>You:</strong> ${entry.user}</p>
-        <p><strong>AI:</strong> ${entry.ai}</p>
-      </div>`;
-  });
-}
-
+      const box = document.getElementById("response-box");
+      box.innerHTML = "";
+      history.slice().reverse().forEach(entry => {
+        box.innerHTML += `
+          <div class="entry">
+            <p><strong>You:</strong> ${entry.user}</p>
+            <p><strong>AI:</strong> ${entry.ai}</p>
+          </div>`;
+      });
+    }
 
     renderHistory();
 
@@ -117,14 +127,50 @@
     }
 
     function startListening() {
-      const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      rec.lang = "en-US";
-      rec.interimResults = false;
-      rec.onresult = (e) => {
-        const spoken = e.results[0][0].transcript;
-        sendToAPI(spoken);
+      document.getElementById("startBtn").classList.add("recording");
+      document.getElementById("stopBtn").style.display = "inline-block";
+      document.getElementById("startBtn").disabled = true;
+
+      recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "en-US";
+      recognition.interimResults = true;
+      recognition.onresult = (event) => {
+        let interim = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          if (result.isFinal) {
+            transcript += result[0].transcript;
+          } else {
+            interim += result[0].transcript;
+          }
+        }
+        document.getElementById("interim-box").innerText = transcript + interim;
       };
-      rec.start();
+      recognition.start();
+    }
+
+    function stopListening() {
+      recognition.stop();
+      document.getElementById("startBtn").classList.remove("recording");
+      document.getElementById("startBtn").disabled = false;
+      document.getElementById("stopBtn").style.display = "none";
+      document.getElementById("sendBtn").style.display = "inline-block";
+      document.getElementById("cancelBtn").style.display = "inline-block";
+    }
+
+    function sendTranscript() {
+      sendToAPI(transcript.trim());
+      document.getElementById("interim-box").innerText = "";
+      document.getElementById("sendBtn").style.display = "none";
+      document.getElementById("cancelBtn").style.display = "none";
+      transcript = "";
+    }
+
+    function cancelTranscript() {
+      transcript = "";
+      document.getElementById("interim-box").innerText = "";
+      document.getElementById("sendBtn").style.display = "none";
+      document.getElementById("cancelBtn").style.display = "none";
     }
   </script>
 </body>

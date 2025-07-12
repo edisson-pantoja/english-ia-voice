@@ -120,7 +120,7 @@
         body: JSON.stringify({ message: text })
       });
       const data = await res.json();
-      history.push({ user: text, ai: data.reply });
+      history.unshift({ user: text, ai: data.reply });
       localStorage.setItem("chatHistory", JSON.stringify(history));
       renderHistory();
       speak(data.reply);
